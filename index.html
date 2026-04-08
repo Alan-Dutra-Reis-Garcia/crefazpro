@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crefaz | Parceiro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #e47718;
+            --bg-dark: #181D23;
+            --bg-card: #2a313a;
+            --bg-sidebar: #242A31;
+            --text-main: #E8EAED;
+            --text-muted: #B8B8B8;
+            --border: #455060;
+            --success: #30c68f;
+            --blue: #4791FF;
+            --danger: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { width: 280px; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
+        .logo-area { padding: 30px 24px; border-bottom: 1px solid var(--border); font-weight: 700; color: var(--primary); font-size: 20px; letter-spacing: 1px; }
+        .nav-menu { flex: 1; padding: 20px 0; }
+        .nav-item { padding: 14px 24px; display: flex; align-items: center; gap: 12px; color: var(--text-muted); cursor: pointer; transition: 0.2s; border-left: 4px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(228, 119, 24, 0.1); color: var(--primary); border-left-color: var(--primary); }
+        
+        /* --- MAIN LAYOUT --- */
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-bar { height: 70px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; background: var(--bg-sidebar); flex-shrink: 0; }
+        .page-content { flex: 1; overflow-y: auto; padding: 30px; display: none; }
+        .page-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- FILTROS (GERAL) --- */
+        .filter-bar { background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); display: flex; gap: 15px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+        select, input { background: var(--bg-dark); border: 1px solid var(--border); color: white; padding: 8px 12px; border-radius: 6px; outline: none; font-size: 13px; }
+        .btn-update { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: 700; height: 35px; transition: 0.2s; }
+        .btn-update:hover { opacity: 0.8; }
+
+        /* --- DASHBOARD CARDS --- */
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px; }
+        .kpi-card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer; transition: 0.3s; min-height: 110px; display: flex; flex-direction: column; justify-content: center; }
+        .kpi-card:hover { border-color: var(--primary); background: #323a45; transform: translateY(-2px); }
+        .kpi-title { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
+        .kpi-value { font-size: 24px; font-weight: 700; white-space: nowrap; }
+        .sub-value { font-size: 13px; color: var(--success); margin-top: 6px; display: block; font-weight: 600; }
+        .sub-label { color: var(--text-muted); font-weight: 400; font-size: 11px; }
+        .chart-section { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); height: 350px; margin-bottom: 20px; }
+
+        /* --- TABELA ANALÍTICA (DASHBOARD) --- */
+        #analytical-view { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--primary); margin-top: 20px; overflow: hidden; display: none; }
+        .table-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px 15px; background: rgba(0,0,0,0.2); color: var(--text-muted); font-size: 11px; text-transform: uppercase;}
+        td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        .status-pill { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; background: var(--border); color: white; }
+
+        /* --- KANBAN BOARD --- */
+        .kanban-board { display: flex; gap: 15px; height: calc(100vh - 250px); overflow-x: auto; padding-bottom: 10px; }
+        .kanban-col { min-width: 280px; flex: 0 0 280px; background: rgba(0,0,0,0.15); border-radius: 10px; display: flex; flex-direction: column; border: 1px solid var(--border); }
+        .col-title { padding: 15px; font-size: 12px; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; }
+        .col-count { background: var(--border); padding: 2px 8px; border-radius: 10px; font-size: 10px; color: white; }
+        .kanban-cards-area { padding: 10px; flex: 1; overflow-y: auto; min-height: 100px; }
+        
+        .k-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; cursor: grab; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .k-card:hover { border-color: var(--primary); background: #323a45; }
+        .k-card:active { cursor: grabbing; }
+        .k-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: white; }
+        .k-info { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+        .k-tag { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; color: white; display: inline-block; margin-bottom: 8px; }
+
+        /* --- MODAL DO KANBAN --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content-large { background: var(--bg-sidebar); width: 950px; max-width: 100%; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; animation: slideIn 0.3s ease; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-header { padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); }
+        .modal-body-grid { display: grid; grid-template-columns: 1fr 380px; }
+        .modal-left { padding: 30px; border-right: 1px solid var(--border); background: rgba(255,255,255,0.01); }
+        .modal-right { padding: 30px; background: var(--bg-card); }
+        
+        .detail-section { margin-bottom: 25px; }
+        .detail-section h3 { font-size: 13px; color: var(--primary); text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .detail-item label { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+        .detail-item p { font-size: 14px; color: white; margin-top: 4px; font-weight: 600; }
+        
+        .comm-area textarea { width: 100%; height: 120px; background: #111; border: 1px solid var(--border); border-radius: 8px; color: white; padding: 12px; resize: none; margin: 10px 0; outline: none; font-size: 13px; font-family: inherit; }
+        .btn-action { flex: 1; border: none; padding: 12px; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;}
+        .btn-action:hover { opacity: 0.8; }
+
+        .placeholder-box { border: 2px dashed var(--border); padding: 50px; text-align: center; color: var(--text-muted); border-radius: 12px; }
+
+        /* --- AVISO FLUTUANTE (TOAST) --- */
+        #toast-msg {
+            position: fixed;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: bottom 0.4s ease;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+<div id="toast-msg"><i data-lucide="check-circle" size="18"></i> <span id="toast-text">Mensagem enviada com sucesso!</span></div>
+    <aside class="sidebar">
+        <div class="logo-area">CREFAZ<span style="color:white">PRO</span></div>
+        <nav class="nav-menu">
+            <div class="nav-item active" onclick="showPage('dashboard', this)"><i data-lucide="layout-dashboard"></i> Dashboard</div>
+            <div class="nav-item" onclick="showPage('kanban', this)"><i data-lucide="columns"></i> Kanban</div>
+            <div class="nav-item" onclick="showPage('qualificacao', this)"><i data-lucide="shield-check"></i> Qualificação</div>
+            <div class="nav-item" onclick="showPage('leads', this)"><i data-lucide="user-plus"></i> Geração de Leads</div>
+            <div class="nav-item" onclick="showPage('campanha', this)"><i data-lucide="send"></i> Comunicação SMS</div>
+        </nav>
+    </aside>
+
+    <div class="main-container">
+        <header class="top-bar">
+            <div id="page-title" style="font-weight: 700; font-size: 18px;">Dashboard</div>
+            <div style="display:flex; align-items:center; gap:15px">
+                <div style="text-align: right">
+                    <p style="font-size: 14px; font-weight: 600;">Alan Dutra</p>
+                    <small style="color: var(--text-muted)">Acesso Master</small>
+                </div>
+                <div style="width:40px; height:40px; background: var(--primary); border-radius:50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">AD</div>
+            </div>
+        </header>
+
+        <section id="dashboard" class="page-content active">
+            <div class="filter-bar">
+                <div class="filter-group"><label>Início</label><input type="date" id="dateStart" value="2026-04-01"></div>
+                <div class="filter-group"><label>Fim</label><input type="date" id="dateEnd" value="2026-04-08"></div>
+                <div class="filter-group">
+                    <label>Produto</label>
+                    <select id="produto">
+                        <option value="todos">Todos os Produtos</option>
+                        <option value="energia">Energia</option>
+                        <option value="trabalhador">Crédito do Trabalhador</option>
+                        <option value="auto">CP Auto</option>
+                    </select>
+                </div>
+                <button class="btn-update" onclick="updateDashboardData()">Aplicar Filtros</button>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card" onclick="openAnalytic('Leads Totais', 'var(--text-muted)')">
+                    <div class="kpi-title">Leads Totais</div>
+                    <div class="kpi-value" id="val-leads">12.450</div>
+                </div>
+                <div class="kpi-card" onclick="openAnalytic('Leads Aptos', 'var(--blue)')">
+                    <div class="kpi-title">Leads Aptos</div>
+                    <div class="kpi-value" id="val-aptos" style="color: var(--blue);">8.120</div>
+                    <span class="sub-value" style="color: var(--blue)" id="val-perc-qual">65.2% <span class="sub-label">do total</span></span>
+                </div>
+                <div class="kpi-card" onclick="openAnalytic('Aguard. Ação Vendedor', 'var(--danger)')">
+                    <div class="kpi-title">Aguard. Ação Vendedor</div>
+                    <div class="kpi-value" id="val-pendentes">945</div>
+                </div>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card" onclick="openAnalytic('Concedidos', 'var(--success)')">
+                    <div class="kpi-title">Concedidos</div>
+                    <div class="kpi-value" id="val-concedidos">420</div>
+                    <span class="sub-value" id="val-concedidos-dia">+8 <span class="sub-label">hoje</span></span>
+                </div>
+                <div class="kpi-card" onclick="openAnalytic('R$ Concedidos', 'var(--success)')">
+                    <div class="kpi-title">R$ Concedidos</div>
+                    <div class="kpi-value" id="val-rs-concedidos">R$ 756.000,00</div>
+                    <span class="sub-value" id="val-rs-concedidos-dia">R$ 14.200,00 <span class="sub-label">hoje</span></span>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Adesão</div>
+                    <div class="kpi-value" id="val-adesao" style="color: var(--success);">3.37%</div>
+                    <span class="sub-label" style="margin-top: 5px;">(Concedidos / Total)</span>
+                </div>
+            </div>
+
+            <div class="chart-section"><canvas id="mainChart"></canvas></div>
+
+            <div id="analytical-view">
+                <div class="table-header">
+                    <h3 style="font-size: 14px;">Visão Analítica: <span id="table-title" style="color: var(--primary)"></span></h3>
+                    <button onclick="document.getElementById('analytical-view').style.display='none'" style="background:none; border:none; color:white; cursor:pointer; font-size:24px; line-height:1;">&times;</button>
+                </div>
+                <table>
+                    <thead><tr><th>ID</th><th>CPF</th><th>VENDEDOR</th><th>DATA</th><th>VALOR</th><th>STATUS</th></tr></thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="kanban" class="page-content">
+            <div class="filter-bar">
+                <div class="filter-group"><label>Buscar (Nome, CPF, Proposta)</label><input type="text" id="kSearch" placeholder="Ex: 123.456..." onkeyup="filterKanban()" style="width: 250px;"></div>
+                <div class="filter-group">
+                    <label>Produto</label>
+                    <select id="kFilterProd" onchange="filterKanban()">
+                        <option value="">Todos</option>
+                        <option value="Energia">Energia</option>
+                        <option value="Trabalhador">Trabalhador</option>
+                        <option value="Auto">CP Auto</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="kFilterStatus" onchange="filterKanban()">
+                        <option value="">Todos</option>
+                        <option value="Novo">Novo</option>
+                        <option value="Prospectando">Prospectando</option>
+                        <option value="Negociando">Negociando</option>
+                        <option value="Proposta Cadastrada">Proposta Cadastrada</option>
+                        <option value="Ganho">Ganho</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Origem</label>
+                    <select id="kFilterOrigem" onchange="filterKanban()">
+                        <option value="">Todas</option>
+                        <option value="Balcão">Balcão</option>
+                        <option value="Pré Aprovado">Pré Aprovado</option>
+                        <option value="Quitado">Quitado</option>
+                    </select>
+                </div>
+                <div class="filter-group"><label>Valor Mínimo</label><input type="number" id="kFilterVal" placeholder="R$" onkeyup="filterKanban()" style="width: 100px;"></div>
+                <button class="btn-update" onclick="clearKanbanFilters()">Limpar</button>
+            </div>
+
+            <div class="kanban-board">
+                <div class="kanban-col" data-stage="Novo" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="col-title">NOVO <span class="col-count">2</span></div>
+                    <div class="kanban-cards-area">
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-n1" data-nome="Cadu Navarro" data-cpf="11122233344" data-prop="8821" data-prod="" data-val="" data-tel="(44) 99111-2222" data-nasc="10/05/1980" data-end="Rua A, 123" data-origem="Pré Aprovado" onclick="openLeadModal(this)"></div>
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-n2" data-nome="Mauro Paladino" data-cpf="55566677788" data-prop="8825" data-prod="" data-val="" data-tel="(11) 98888-7777" data-nasc="22/11/1992" data-end="Av Brasil, 90" data-origem="Quitado" onclick="openLeadModal(this)"></div>
+                    </div>
+                </div>
+
+                <div class="kanban-col" data-stage="Prospectando" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="col-title">PROSPECTANDO <span class="col-count">3</span></div>
+                    <div class="kanban-cards-area">
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-p0" data-nome="Alan Dutra" data-cpf="08263220938" data-prop="8900" data-prod="Energia" data-val="" data-tel="(44) 99999-2222" data-nasc="24/10/2002" data-end="Rua C, 45" data-origem="Balcão" onclick="openLeadModal(this)"></div>
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-p1" data-nome="Ricardo Furtado" data-cpf="44433322211" data-prop="8901" data-prod="Energia" data-val="" data-tel="(44) 99999-1111" data-nasc="12/08/1988" data-end="Rua B, 45" data-origem="Pré Aprovado" onclick="openLeadModal(this)"></div>
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-p2" data-nome="Marcos Serrano" data-cpf="12312312312" data-prop="8902" data-prod="Trabalhador" data-val="" data-tel="(21) 91234-5678" data-nasc="30/03/1995" data-end="Rua C, 88" data-origem="Balcão" onclick="openLeadModal(this)"></div>
+                    </div>
+                </div>
+
+                <div class="kanban-col" data-stage="Negociando" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="col-title">NEGOCIANDO <span class="col-count">3</span></div>
+                    <div class="kanban-cards-area">
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-ng1" data-nome="Amerson Magalhães" data-cpf="78978978978" data-prop="9010" data-prod="Energia" data-val="1250" data-tel="(44) 98765-4321" data-nasc="25/12/1970" data-end="Rua D, 99" data-origem="Quitado" onclick="openLeadModal(this)"></div>
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-ng0" data-nome="Gustavo Sossai" data-cpf="010101010101" data-prop="9009" data-prod="Auto" data-val="1250" data-tel="(44) 98765-4444" data-nasc="25/12/1980" data-end="Rua z, 99" data-origem="Pré Aprovado" onclick="openLeadModal(this)"></div>
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-ng2" data-nome="Yrlon Trindade" data-cpf="32132132132" data-prop="9011" data-prod="Trabalhador" data-val="2800" data-tel="(11) 93210-6547" data-nasc="14/04/1985" data-end="Rua E, 77" data-origem="Balcão" onclick="openLeadModal(this)"></div>
+                    </div>
+                </div>
+
+                <div class="kanban-col" data-stage="Proposta Cadastrada" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="col-title">EM ANÁLISE <span class="col-count">1</span></div>
+                    <div class="kanban-cards-area">
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-pc1" data-nome="Allan Ribeiro" data-cpf="98712365400" data-prop="9100" data-prod="Auto" data-val="15000" data-tel="(21) 97894-5612" data-nasc="02/02/1989" data-end="Rua G, 21" data-origem="Pré Aprovado" onclick="openLeadModal(this)"></div>
+                    </div>
+                </div>
+
+                <div class="kanban-col" data-stage="Ganho" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="col-title">GANHO <span class="col-count">1</span></div>
+                    <div class="kanban-cards-area">
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-g1" data-nome="Maiza Oliveira" data-cpf="11155599900" data-prop="9200" data-prod="Energia" data-val="1200" data-tel="(11) 91115-5599" data-nasc="17/03/1983" data-end="Rua J, 9" data-origem="Balcão" onclick="openLeadModal(this)"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<section id="qualificacao" class="page-content">
+            <style>
+                .qual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+                .qual-card { background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+                .qual-title { font-size: 16px; color: var(--primary); font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+                
+                /* Upload Zone */
+                .upload-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.3s; background: rgba(0,0,0,0.1); margin-bottom: 15px; }
+                .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background: rgba(228, 119, 24, 0.05); }
+                .upload-zone input[type="file"] { display: none; }
+                
+                /* Results */
+                .result-box { margin-top: 20px; padding: 20px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); display: none; animation: fadeIn 0.4s ease; }
+                .status-badge.apto { background: rgba(48, 198, 143, 0.2); color: var(--success); border: 1px solid var(--success); padding: 5px 12px; border-radius: 20px; font-weight: 700; display: inline-block; margin-bottom: 15px;}
+                
+                /* Listas de Desqualificação */
+                .disqual-list { margin-top: 15px; background: #181D23; border-radius: 8px; padding: 15px; border: 1px solid var(--border); }
+                .disqual-item { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+                .disqual-item span { color: #ef4444; font-weight: 600; }
+                
+                .action-row { display: flex; gap: 10px; margin-top: 15px; }
+                .loader { border: 3px solid rgba(255,255,255,0.1); border-left-color: var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+            </style>
+
+            <div style="margin-bottom: 25px;">
+                <h2 style="font-weight: 700; font-size: 20px;">Qualificação de Oportunidades</h2>
+                <p style="font-size: 13px; color: var(--text-muted);">Consulte CPFs individualmente no balcão ou processe bases inteiras em lote.</p>
+            </div>
+
+            <div class="qual-grid">
+                <div class="qual-card">
+                    <div class="qual-title"><i data-lucide="user-check" size="20"></i> Consulta Individual</div>
+                    <div class="filter-group" style="margin-bottom: 15px;">
+                        <label>Digite o CPF do Cliente</label>
+                        <input type="text" id="cpf-ind-input" placeholder="Ex: 123.456.789-00" style="font-size: 16px; padding: 12px;">
+                    </div>
+                    <button class="btn-update" onclick="simulateIndQual()" style="height: 45px; font-size: 14px;"><i data-lucide="search" size="16" style="display:inline-block; vertical-align:middle; margin-right:5px;"></i> Qualificar CPF</button>
+
+                    <div class="loader" id="loader-ind"></div>
+
+                    <div class="result-box" id="result-ind">
+                        <div class="status-badge apto"><i data-lucide="check-circle" size="14" style="display:inline-block; vertical-align:middle;"></i> CLIENTE APTO</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; margin-bottom: 15px;">
+                            <div><span style="color:var(--text-muted); display:block; font-size:10px;">PRODUTOS LIBERADOS</span><strong>Energia, Trabalhador</strong></div>
+                            <div><span style="color:var(--text-muted); display:block; font-size:10px;">LIMITE ESTIMADO</span><strong style="color:var(--primary); font-size:16px;">R$ 3.500,00</strong></div>
+                        </div>
+                        <div class="action-row">
+                            <button class="btn-update" onclick="showToast('Abrindo formulário completo...')" style="flex:1; background:transparent; border:1px solid var(--primary); color:var(--primary);">Digitação Completa</button>
+                            <button class="btn-update" onclick="registerCRM('ind')" style="flex:1;"><i data-lucide="kanban" size="16" style="display:inline-block; vertical-align:middle;"></i> Registrar no Kanban</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="qual-card">
+                    <div class="qual-title"><i data-lucide="file-spreadsheet" size="20"></i> Qualificação em Lote</div>
+                    
+                    <label for="csv-file" class="upload-zone" id="drop-zone">
+                        <i data-lucide="upload-cloud" size="36" style="color: var(--primary); margin-bottom: 10px;"></i>
+                        <p style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">Arraste sua base CSV para cá</p>
+                        <p style="font-size: 11px; color: var(--text-muted);">Ou clique para selecionar o arquivo no computador.</p>
+                        <input type="file" id="csv-file" accept=".csv" onchange="fileSelected(this)">
+                    </label>
+
+                    <button class="btn-update" id="btn-process-csv" onclick="simulateBatchQual()" style="height: 45px; font-size: 14px; background: #444; cursor: not-allowed;" disabled><i data-lucide="settings" size="16" style="display:inline-block; vertical-align:middle; margin-right:5px;"></i> Processar Base de Dados</button>
+
+                    <div class="loader" id="loader-batch"></div>
+
+                    <div class="result-box" id="result-batch">
+                        <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--primary);">Resumo do Processamento</h4>
+                        <div style="display: flex; gap: 20px; font-size: 13px; margin-bottom: 15px;">
+                            <div><span style="color:var(--text-muted); display:block; font-size:10px;">CASOS PROCESSADOS</span><strong>1.000 clientes</strong></div>
+                            <div><span style="color:var(--text-muted); display:block; font-size:10px;">CLIENTES APTOS</span><strong style="color:var(--success); font-size:16px;">658 leads</strong></div>
+                        </div>
+
+                        <div class="disqual-list">
+                            <p style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">Principais Desqualificações (342)</p>
+                            <div class="disqual-item">Contrato em Andamento <span>242</span></div>
+                            <div class="disqual-item">Histórico de Negativas <span>50</span></div>
+                            <div class="disqual-item">Histórico de Acordo <span>50</span></div>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button class="btn-update" onclick="registerCRM('batch')" style="width: 100%;"><i data-lucide="kanban" size="16" style="display:inline-block; vertical-align:middle;"></i> Enviar 658 Aptos p/ Kanban (Novo)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // LÓGICA QUALIFICAÇÃO INDIVIDUAL
+                function simulateIndQual() {
+                    const input = document.getElementById('cpf-ind-input').value;
+                    if(!input) {
+                        showToast('Digite um CPF válido!');
+                        return;
+                    }
+                    
+                    document.getElementById('result-ind').style.display = 'none';
+                    document.getElementById('loader-ind').style.display = 'block';
+                    
+                    // Simula tempo de requisição de API
+                    setTimeout(() => {
+                        document.getElementById('loader-ind').style.display = 'none';
+                        document.getElementById('result-ind').style.display = 'block';
+                        lucide.createIcons();
+                    }, 1200);
+                }
+
+                // LÓGICA QUALIFICAÇÃO LOTE (CSV)
+                const dropZone = document.getElementById('drop-zone');
+                const btnProcess = document.getElementById('btn-process-csv');
+
+                // Simula o arrastar e soltar (efeitos visuais)
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                });
+                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    fileSelected({ files: e.dataTransfer.files });
+                });
+
+                function fileSelected(input) {
+                    if(input.files && input.files.length > 0) {
+                        const fileName = input.files[0].name;
+                        dropZone.innerHTML = `<i data-lucide="file-check" size="36" style="color: var(--success); margin-bottom: 10px;"></i>
+                                              <p style="font-weight: 600; font-size: 14px; color: var(--success);">Arquivo Carregado!</p>
+                                              <p style="font-size: 11px; color: var(--text-muted);">${fileName}</p>`;
+                        btnProcess.disabled = false;
+                        btnProcess.style.background = 'var(--primary)';
+                        btnProcess.style.cursor = 'pointer';
+                        lucide.createIcons();
+                    }
+                }
+
+                function simulateBatchQual() {
+                    document.getElementById('result-batch').style.display = 'none';
+                    document.getElementById('loader-batch').style.display = 'block';
+                    
+                    // Simula o processamento de 1000 linhas
+                    setTimeout(() => {
+                        document.getElementById('loader-batch').style.display = 'none';
+                        document.getElementById('result-batch').style.display = 'block';
+                        lucide.createIcons();
+                    }, 2000);
+                }
+
+                // AÇÃO COMUM: MANDAR PARA O KANBAN
+                function registerCRM(type) {
+                    showToast('Leads registrados com sucesso na etapa NOVO!');
+                    
+                    if(type === 'ind') {
+                        document.getElementById('result-ind').style.display = 'none';
+                        document.getElementById('cpf-ind-input').value = '';
+                    } else {
+                        document.getElementById('result-batch').style.display = 'none';
+                        dropZone.innerHTML = `<i data-lucide="upload-cloud" size="36" style="color: var(--primary); margin-bottom: 10px;"></i>
+                                              <p style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">Arraste sua base CSV para cá</p>
+                                              <p style="font-size: 11px; color: var(--text-muted);">Ou clique para selecionar o arquivo no computador.</p>`;
+                        btnProcess.disabled = true;
+                        btnProcess.style.background = '#444';
+                        btnProcess.style.cursor = 'not-allowed';
+                    }
+                    lucide.createIcons();
+                }
+
+                // TOAST REUTILIZÁVEL (Se não existir na raiz, cria e exibe)
+                function showToast(msg) {
+                    let toast = document.getElementById('toast-msg');
+                    if(!toast) {
+                        toast = document.createElement('div');
+                        toast.id = 'toast-msg';
+                        toast.style.cssText = 'position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: bottom 0.4s ease; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px;';
+                        document.body.appendChild(toast);
+                    }
+                    toast.innerHTML = `<i data-lucide="info" size="18"></i> <span>${msg}</span>`;
+                    lucide.createIcons();
+                    
+                    toast.style.bottom = '30px';
+                    setTimeout(() => { toast.style.bottom = '-60px'; }, 3000);
+                }
+            </script>
+        </section>
+<section id="leads" class="page-content">
+            <div style="margin-bottom: 25px;">
+                <h2 style="font-weight: 700; font-size: 20px;">Gerador de Carteiras</h2>
+                <p style="font-size: 13px; color: var(--text-muted);">Extraia bases segmentadas do sistema. Os leads já passarão por uma qualificação prévia automática.</p>
+            </div>
+
+            <div class="filter-bar" style="align-items: center;">
+                <div class="filter-group">
+                    <label>Origem da Base</label>
+                    <select id="lead-origem" onchange="updateDateLabel()" style="width: 220px; font-weight: 600; color: var(--primary);">
+                        <option value="Pré Aprovados Exclusivos">Pré Aprovados Exclusivos</option>
+                        <option value="Aprovados Exclusivos">Aprovados Exclusivos</option>
+                        <option value="Quitados">Quitados</option>
+                        <option value="Pré Quitados">Pré Quitados</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label id="lead-date-label">Data de Digitação (Início)</label>
+                    <input type="date" id="lead-data-inicio" value="2026-03-01">
+                </div>
+                <div class="filter-group">
+                    <label>Data (Fim)</label>
+                    <input type="date" id="lead-data-fim" value="2026-04-08">
+                </div>
+                <button class="btn-update" onclick="generateLeads()" style="height: 38px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="database" size="16"></i> Extrair Base
+                </button>
+            </div>
+
+            <div id="loader-leads" style="display: none; text-align: center; padding: 50px;">
+                <div style="border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+                <p style="color: var(--text-muted); font-size: 14px;">Buscando e qualificando registros...</p>
+            </div>
+
+            <div id="lead-results" style="display: none; animation: fadeIn 0.4s ease;">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="kpi-card" style="border-left: 4px solid #666; cursor: default;">
+                        <div class="kpi-title">Volume Processado</div>
+                        <div class="kpi-value" id="res-total">0</div>
+                        <span class="sub-label" style="margin-top: 5px; display: block;">Total de registros encontrados no período</span>
+                    </div>
+                    <div class="kpi-card" style="border-left: 4px solid var(--success); cursor: default;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div class="kpi-title" style="color: var(--success);">Leads Aptos (Qualificados)</div>
+                                <div class="kpi-value" id="res-aptos" style="color: white;">0</div>
+                            </div>
+                            <button class="btn-update" onclick="sendLeadsToKanban()" style="background: var(--success); display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="kanban" size="16"></i> Enviar para o Kanban (Novo)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden;">
+                    <div class="table-header">
+                        <h3 style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Prévia da Carteira <span style="color: white;">(10 Primeiros Casos)</span></h3>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th>CPF</th>
+                                <th>NOME</th>
+                                <th>NASCIMENTO</th>
+                                <th>CEP</th>
+                                <th>CIDADE/UF</th>
+                                <th>ORIGEM</th>
+                                <th id="th-data-type">DATA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lead-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <script>
+                // Altera o label da data dependendo da Origem
+                function updateDateLabel() {
+                    const origem = document.getElementById('lead-origem').value;
+                    const label = document.getElementById('lead-date-label');
+                    const thData = document.getElementById('th-data-type');
+                    
+                    if (origem.includes('Quitados')) {
+                        label.innerText = 'Data de Últ. Pagamento (Início)';
+                        if(thData) thData.innerText = 'ÚLT. PAGAMENTO';
+                    } else {
+                        label.innerText = 'Data de Digitação (Início)';
+                        if(thData) thData.innerText = 'DIGITAÇÃO';
+                    }
+                }
+
+                // Simula a geração da base
+                function generateLeads() {
+                    document.getElementById('lead-results').style.display = 'none';
+                    document.getElementById('loader-leads').style.display = 'block';
+
+                    const origem = document.getElementById('lead-origem').value;
+
+                    // Simula tempo de rede e processamento
+                    setTimeout(() => {
+                        document.getElementById('loader-leads').style.display = 'none';
+                        document.getElementById('lead-results').style.display = 'block';
+
+                        // Gera números aleatórios mas realistas
+                        const total = Math.floor(Math.random() * 8000) + 2000; // Entre 2k e 10k
+                        const aptos = Math.floor(total * (Math.random() * 0.3 + 0.5)); // Entre 50% e 80% do total
+
+                        document.getElementById('res-total').innerText = total.toLocaleString('pt-BR');
+                        document.getElementById('res-aptos').innerText = aptos.toLocaleString('pt-BR');
+
+                        // Gera 10 linhas para a prévia
+                        const tbody = document.getElementById('lead-table-body');
+                        tbody.innerHTML = '';
+                        
+                        const nomes = ['Carlos Mendes', 'Mariana Costa', 'Fernando Silva', 'Juliana Alves', 'Roberto Dias', 'Amanda Rocha', 'Tiago Santos', 'Beatriz Lima', 'Ricardo Gomes', 'Vanessa Souza'];
+                        const cidades = ['Maringá/PR', 'São Paulo/SP', 'Campinas/MG', 'Londrina/PR', 'Curitiba/PR'];
+                        
+                        for(let i = 0; i < 10; i++) {
+                            const cpf = `***.${Math.floor(Math.random()*900+100)}.***-${Math.floor(Math.random()*90+10)}`;
+                            const cep = `87${Math.floor(Math.random()*900+100)}-000`;
+                            const nasc = `${Math.floor(Math.random()*28+1).toString().padStart(2,'0')}/${Math.floor(Math.random()*12+1).toString().padStart(2,'0')}/19${Math.floor(Math.random()*30+60)}`;
+                            const dataRef = `0${Math.floor(Math.random()*8+1)}/04/2026`;
+
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td style="font-weight: 600;">${cpf}</td>
+                                    <td>${nomes[i]}</td>
+                                    <td>${nasc}</td>
+                                    <td>${cep}</td>
+                                    <td>${cidades[Math.floor(Math.random()*cidades.length)]}</td>
+                                    <td><span class="status-pill" style="background: rgba(228, 119, 24, 0.2); color: var(--primary); border: 1px solid var(--primary);">${origem}</span></td>
+                                    <td>${dataRef}</td>
+                                </tr>
+                            `;
+                        }
+
+                        lucide.createIcons();
+                    }, 1500);
+                }
+
+                // Simula o envio para o Kanban
+                function sendLeadsToKanban() {
+                    const aptos = document.getElementById('res-aptos').innerText;
+                    
+                    // Verifica se a função showToast (criada no passo da qualificação) existe
+                    if(typeof showToast === 'function') {
+                        showToast(`${aptos} Leads foram inseridos no seu Kanban (Coluna: NOVO) com sucesso!`);
+                    } else {
+                        alert(`${aptos} Leads foram inseridos no seu Kanban com sucesso!`);
+                    }
+                    
+                    // Reseta a tela
+                    document.getElementById('lead-results').style.display = 'none';
+                }
+            </script>
+        </section>
+<section id="campanha" class="page-content">
+            <div style="margin-bottom: 25px;">
+                <h2 style="font-weight: 700; font-size: 20px;">Comunicação em Massa</h2>
+                <p style="font-size: 13px; color: var(--text-muted);">Filtre clientes do seu Kanban ou da base geral para disparar mensagens e reaquecer leads.</p>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Etapa do Funil</label>
+                    <select id="camp-etapa" style="width: 160px;">
+                        <option value="Todos">Todas</option>
+                        <option value="Novo">Novo</option>
+                        <option value="Prospectando">Prospectando</option>
+                        <option value="Negociando">Negociando</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Origem</label>
+                    <select id="camp-origem" style="width: 160px;">
+                        <option value="Todas">Todas as Origens</option>
+                        <option value="Aprovados">Aprovados</option>
+                        <option value="Quitados">Quitados</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Mês de Nascimento</label>
+                    <select id="camp-mes" style="width: 140px;">
+                        <option value="">Nenhum</option>
+                        <option value="04">Abril (Aniversariantes)</option>
+                        <option value="05">Maio (Aniversariantes)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Status (Situação)</label>
+                    <select id="camp-status" style="width: 160px;">
+                        <option value="">Ativos e Inativos</option>
+                        <option value="Parados">Parados > 24h</option>
+                        <option value="SemContato">Nunca contatados</option>
+                    </select>
+                </div>
+                <button class="btn-update" onclick="simulateCampFilter()" style="height: 38px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="filter" size="16"></i> Filtrar Clientes
+                </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 380px; gap: 20px;">
+                
+                <div style="background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; min-height: 400px;">
+                    <div class="table-header">
+                        <div>
+                            <h3 style="font-size: 14px; margin-bottom: 4px; color: white;">Público Alvo Selecionado</h3>
+                            <span style="font-size: 11px; color: var(--text-muted);" id="camp-count">Aguardando filtro...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="camp-loader" style="display: none; padding: 50px; text-align: center;">
+                        <div style="border: 3px solid rgba(255,255,255,0.1); border-left-color: var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+                        <p style="color: var(--text-muted); font-size: 12px;">Aplicando filtros...</p>
+                    </div>
+
+                    <div style="flex: 1; overflow-y: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"><input type="checkbox" checked disabled></th>
+                                    <th>NOME</th>
+                                    <th>TELEFONE</th>
+                                    <th>ETAPA</th>
+                                </tr>
+                            </thead>
+                            <tbody id="camp-table-body">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                        Selecione os filtros acima para carregar a lista de envio.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column;">
+                    <h3 style="font-size: 14px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="edit-3" size="18" color="var(--primary)"></i> Nova Campanha
+                    </h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 8px;">Variáveis Dinâmicas</label>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <span class="status-pill" style="cursor: pointer; background: rgba(255,255,255,0.1);" onclick="insertVar('{NOME}')">{NOME}</span>
+                            <span class="status-pill" style="cursor: pointer; background: rgba(255,255,255,0.1);" onclick="insertVar('{PRODUTO}')">{PRODUTO}</span>
+                            <span class="status-pill" style="cursor: pointer; background: rgba(255,255,255,0.1);" onclick="insertVar('{VALOR}')">{VALOR}</span>
+                        </div>
+                    </div>
+
+                    <textarea id="camp-msg" onkeyup="countChars()" style="width: 100%; flex: 1; min-height: 120px; background: #111; border: 1px solid var(--border); border-radius: 8px; color: white; padding: 12px; resize: none; outline: none; font-size: 13px; font-family: inherit;" placeholder="Escreva sua mensagem aqui. Clique nas variáveis acima para personalizar o texto..."></textarea>
+                    <div style="text-align: right; font-size: 10px; color: var(--text-muted); margin-top: 5px;" id="char-count">0 / 160 caracteres</div>
+
+                    <div style="margin-top: 20px;">
+                        <label style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 8px;">Canal de Disparo</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <label style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                                <input type="radio" name="canal" value="whatsapp" checked> <i data-lucide="phone" size="16" style="color:#25D366"></i> WhatsApp
+                            </label>
+                            <label style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                                <input type="radio" name="canal" value="sms"> <i data-lucide="send" size="16" style="color:var(--primary)"></i> SMS
+                            </label>
+                        </div>
+
+                        <button class="btn-update" id="btn-disparar" onclick="fireCampaign(this)" style="width: 100%; height: 45px; display: flex; align-items: center; justify-content: center; gap: 8px; background: #444; cursor: not-allowed;" disabled>
+                            <i data-lucide="rocket" size="18"></i> Disparar Lote
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="leadModal" class="modal-overlay">
+        <div class="modal-content-large">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:15px">
+                    <div id="m-avatar" style="width:50px; height:50px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px;"></div>
+                    <div>
+                        <h2 id="modal-nome" style="margin:0">Nome do Cliente</h2>
+                        <span id="modal-status" class="status-pill" style="background:var(--primary); padding:4px 8px; display:inline-block; margin-top:4px;">Status</span>
+                    </div>
+                </div>
+                <button onclick="closeLeadModal()" style="background:none; border:none; color:white; font-size:28px; cursor:pointer">&times;</button>
+            </div>
+            <div class="modal-body-grid">
+                <div class="modal-left">
+                    <div class="detail-section">
+                        <h3><i data-lucide="user" size="16"></i> Dados Pessoais</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item"><label>CPF</label><p id="modal-cpf">-</p></div>
+                            <div class="detail-item"><label>Telefone</label><p id="modal-tel">-</p></div>
+                            <div class="detail-item"><label>Nascimento</label><p id="modal-nasc">-</p></div>
+                            <div class="detail-item"><label>Endereço</label><p id="modal-end">-</p></div>
+                        </div>
+                    </div>
+                    <div class="detail-section" style="margin-top:30px;">
+                        <h3><i data-lucide="briefcase" size="16"></i> Oportunidade Crefaz</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item"><label>Nº Proposta</label><p id="modal-prop">-</p></div>
+                            <div class="detail-item"><label>Produto</label><p id="modal-prod" style="color:var(--blue); font-weight:700; font-size:16px;">-</p></div>
+                            <div class="detail-item"><label>Valor Solicitado</label><p id="modal-val" style="color:var(--success); font-weight:700; font-size:18px">-</p></div>
+                            <div class="detail-item" style="grid-column: span 2;"><label>Origem do Cliente</label><p id="modal-origem" style="color: var(--primary);">-</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-right">
+                    <h3 style="font-size:14px; margin-bottom:5px;"><i data-lucide="message-square" size="16"></i> Comunicação Individual</h3>
+                    <p style="font-size:11px; color:var(--text-muted); margin-bottom:15px;">Envie uma mensagem personalizada para converter o lead.</p>
+                    <div class="comm-area">
+                        <textarea id="modal-msg" style="width:100%; height:120px; background:#111; border:1px solid var(--border); border-radius:8px; color:white; padding:12px; resize:none; font-family:inherit; outline:none;"></textarea>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button class="btn-update" onclick="sendMessage('WhatsApp', this)" style="flex:1; background:#25D366; display:flex; align-items:center; justify-content:center; gap:8px;"><i data-lucide="phone" size="16"></i> WhatsApp</button>
+                            <button class="btn-update" onclick="sendMessage('SMS', this)" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px;"><i data-lucide="send" size="16"></i> SMS</button>
+                        </div>
+                    </div>
+                    <div style="margin-top:25px; padding:15px; background:rgba(71,145,255,0.1); border-radius:8px; border:1px solid rgba(71,145,255,0.3); color:var(--blue); font-size:11px; line-height:1.4;">
+                        <strong style="display:block; margin-bottom:5px; font-size:12px;"><i data-lucide="bot" size="14"></i> Automação Ativa:</strong>
+                        Se o produto e o valor forem preenchidos, o sistema avançará a etapa do Kanban automaticamente.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LÓGICA DA CAMPANHA (COMUNICAÇÃO) ---
+        
+        function simulateCampFilter() {
+            const tbody = document.getElementById('camp-table-body');
+            const loader = document.getElementById('camp-loader');
+            const countLabel = document.getElementById('camp-count');
+            const btn = document.getElementById('btn-disparar');
+            const etapaFiltro = document.getElementById('camp-etapa').value;
+            
+            tbody.innerHTML = '';
+            loader.style.display = 'block';
+            btn.disabled = true;
+            btn.style.background = '#444';
+            btn.style.cursor = 'not-allowed';
+            countLabel.innerText = "Processando base...";
+
+            setTimeout(() => {
+                loader.style.display = 'none';
+                
+                // Gera um número aleatório de destinatários entre 40 e 300
+                const numLeads = Math.floor(Math.random() * 260) + 40;
+                countLabel.innerHTML = `<strong style="color:var(--success)">${numLeads} clientes</strong> prontos para disparo.`;
+
+                // Gera os primeiros 8 para a prévia visual
+                const nomes = ['Amanda Silva', 'Bruno Costa', 'Carlos Lima', 'Daniela Souza', 'Eduardo Alves', 'Fernanda Rocha', 'Gabriel Mendes', 'Helena Dias'];
+                
+                for(let i=0; i < 8; i++) {
+                    let etapaDisplay = etapaFiltro === "Todos" ? ['Novo', 'Prospectando', 'Negociando'][Math.floor(Math.random()*3)] : etapaFiltro;
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><input type="checkbox" checked style="cursor:pointer"></td>
+                            <td style="font-weight: 600;">${nomes[i]}</td>
+                            <td>(44) 9${Math.floor(Math.random()*8000+1000)}-${Math.floor(Math.random()*8000+1000)}</td>
+                            <td><span class="status-pill" style="background: rgba(255,255,255,0.1)">${etapaDisplay}</span></td>
+                        </tr>
+                    `;
+                }
+
+                // Libera o botão de disparo
+                btn.disabled = false;
+                btn.style.background = 'var(--primary)';
+                btn.style.cursor = 'pointer';
+
+            }, 1000);
+        }
+
+        // Insere a variável no textarea
+        function insertVar(variable) {
+            const txt = document.getElementById('camp-msg');
+            txt.value += variable + ' ';
+            txt.focus();
+            countChars();
+        }
+
+        // Conta os caracteres
+        function countChars() {
+            const txt = document.getElementById('camp-msg').value;
+            document.getElementById('char-count').innerText = `${txt.length} / 160 caracteres`;
+            if(txt.length > 160) {
+                document.getElementById('char-count').style.color = 'var(--danger)';
+            } else {
+                document.getElementById('char-count').style.color = 'var(--text-muted)';
+            }
+        }
+
+        // Simula o Disparo
+        function fireCampaign(btn) {
+            const msg = document.getElementById('camp-msg').value;
+            if(msg.trim() === '') {
+                alert("Digite uma mensagem antes de disparar!");
+                return;
+            }
+
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<div style="border: 2px solid white; border-left-color: transparent; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite;"></div> Disparando...`;
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = `<i data-lucide="check-circle" size="18"></i> Lote Enviado!`;
+                btn.style.background = '#25D366';
+                lucide.createIcons();
+
+                // Usa o seu toast já existente (se estiver no código, se não, cria um rápido)
+                if(typeof showToast === 'function') {
+                    showToast("Campanha disparada com sucesso para a fila de envio!");
+                } else {
+                    alert("Campanha disparada com sucesso!");
+                }
+
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    btn.style.background = 'var(--primary)';
+                    document.getElementById('camp-msg').value = '';
+                    countChars();
+                    lucide.createIcons();
+                }, 3000);
+            }, 2000);
+        }
+        // Inicializa ícones do Lucide
+        lucide.createIcons();
+
+        // --- NAVEGAÇÃO ---
+        function showPage(pageId, element) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            element.classList.add('active');
+            document.getElementById('page-title').innerText = element.innerText;
+            if(pageId === 'kanban') renderAllCards(); // Atualiza layout dos cards ao abrir o Kanban
+        }
+
+        // --- LÓGICA DO DASHBOARD ---
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        let mainChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: ['01/04', '02/04', '03/04', '04/04', '05/04', '06/04', '07/04', '08/04'], datasets: [{ label: 'Qtd Concedida', data: [30, 45, 32, 50, 40, 60, 35, 8], borderColor: '#e47718', backgroundColor: 'rgba(228, 119, 24, 0.1)', fill: true, tension: 0.4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: function(i) { return `Qtd: ${i.raw} | R$ ${(i.raw * 1800).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`; } } } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#B8B8B8' } }, x: { grid: { display: false }, ticks: { color: '#B8B8B8' } } } }
+        });
+
+        function getDaysArray(start, end) {
+            let arr = [];
+            for(let dt=new Date(start); dt<=new Date(end); dt.setDate(dt.getDate()+1)){ arr.push(new Date(dt).toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'})); }
+            return arr;
+        };
+
+        function updateDashboardData() {
+            const start = document.getElementById('dateStart').value;
+            const end = document.getElementById('dateEnd').value;
+            if (!start || !end) return;
+
+            const newLabels = getDaysArray(start, end);
+            mainChart.data.labels = newLabels;
+            const newData = newLabels.map(() => Math.floor(Math.random() * 60 + 5));
+            mainChart.data.datasets[0].data = newData;
+
+            const totalLeads = Math.floor(Math.random() * 5000 + 10000);
+            const totalAptos = Math.floor(totalLeads * (Math.random() * 0.2 + 0.5));
+            const totalConcedidos = newData.reduce((a, b) => a + b, 0);
+            const valorTotal = totalConcedidos * 1745.50;
+            const valorHoje = newData[newData.length - 1] * 1745.50;
+
+            document.getElementById('val-leads').innerText = totalLeads.toLocaleString('pt-BR');
+            document.getElementById('val-aptos').innerText = totalAptos.toLocaleString('pt-BR');
+            document.getElementById('val-perc-qual').innerHTML = `${((totalAptos / totalLeads) * 100).toFixed(1)}% <span class="sub-label">do total</span>`;
+            document.getElementById('val-concedidos').innerText = totalConcedidos.toLocaleString('pt-BR');
+            document.getElementById('val-concedidos-dia').innerHTML = `+${newData[newData.length - 1]} <span class="sub-label">hoje</span>`;
+            document.getElementById('val-rs-concedidos').innerText = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('val-rs-concedidos-dia').innerHTML = `${valorHoje.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} <span class="sub-label">hoje</span>`;
+            document.getElementById('val-adesao').innerText = ((totalConcedidos / totalLeads) * 100).toFixed(2) + '%';
+
+            mainChart.update();
+        }
+
+        // Tabela Analítica Drill-down
+        function openAnalytic(title, color = 'var(--primary)') {
+            const panel = document.getElementById('analytical-view');
+            panel.style.display = 'block';
+            document.getElementById('table-title').innerText = title;
+            document.getElementById('table-title').style.color = color;
+            
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            for(let i=1; i<=6; i++) {
+                tbody.innerHTML += `<tr><td>#${1000 + i}</td><td>***.${Math.floor(Math.random()*900+100)}.***-**</td><td>Vendedor ${['Ricardo', 'Ana', 'Bruno', 'Alan'][Math.floor(Math.random()*4)]}</td><td>${document.getElementById('dateEnd').value.split('-').reverse().join('/')}</td><td>${(Math.random()*2500 + 400).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td><td><span class="status-pill" style="background: ${color}">${title}</span></td></tr>`;
+            }
+            panel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- LÓGICA KANBAN ---
+
+        // Renderizador de Cards (Responsável por aplicar cor/produto/valor visualmente baseando nos dados)
+            function renderCard(card) {
+            const nome = card.getAttribute('data-nome');
+            const prop = card.getAttribute('data-prop');
+            const prod = card.getAttribute('data-prod');
+            const val = card.getAttribute('data-val');
+            const origem = card.getAttribute('data-origem'); // 1. Adicionado a captura da origem
+            const stage = card.closest('.kanban-col').getAttribute('data-stage');
+
+            let html = '';
+            let bColor = 'var(--border)';
+
+            if (stage === 'Ganho') bColor = 'var(--success)';
+            else if (stage === 'Proposta Cadastrada') bColor = '#666';
+            else if (stage === 'Negociando') bColor = 'var(--primary)';
+            else if (stage === 'Prospectando') bColor = 'var(--blue)';
+
+            card.style.borderLeft = `4px solid ${bColor}`;
+
+            if (prod) html += `<div class="k-tag" style="background:${bColor}">${prod}</div>`;
+            html += `<div class="k-name">${nome}</div>`;
+            html += `<div class="k-info">Prop: #${prop}</div>`;
+            
+            // 2. Renderiza a origem visualmente no card (se existir)
+            if (origem) html += `<div class="k-info" style="font-size:10px; margin-top:4px;"><i data-lucide="map-pin" style="width:10px; height:10px; display:inline-block; margin-right:2px;"></i> ${origem}</div>`;
+            
+            if (val) html += `<div style="color:${bColor}; font-weight:700; font-size:13px; margin-top:5px;">R$ ${parseFloat(val).toLocaleString('pt-BR')}</div>`;
+            if (stage === 'Ganho') html += `<div style="font-size:9px; color:var(--success); font-weight:bold; margin-top:5px;">CONCEDIDO</div>`;
+
+            card.innerHTML = html;
+        }
+
+        function renderAllCards() {
+            document.querySelectorAll('.k-card').forEach(c => renderCard(c));
+            updateColCounts();
+        }
+
+        // Drag & Drop
+        function allowDrop(e) { e.preventDefault(); }
+        function drag(e) { e.dataTransfer.setData("text", e.target.id); }
+        function drop(e) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData("text");
+            const card = document.getElementById(id);
+            const targetCol = e.target.closest('.kanban-col');
+            
+            if (targetCol && card) {
+                targetCol.querySelector('.kanban-cards-area').appendChild(card);
+                const newStage = targetCol.getAttribute('data-stage');
+
+                // Regras de Negócio ao mover colunas
+                if (newStage === 'Novo') {
+                    card.setAttribute('data-prod', '');
+                    card.setAttribute('data-val', '');
+                } else if (newStage === 'Prospectando') {
+                    if (!card.getAttribute('data-prod')) card.setAttribute('data-prod', 'Energia');
+                    card.setAttribute('data-val', '');
+                } else {
+                    if (!card.getAttribute('data-prod')) card.setAttribute('data-prod', 'Trabalhador');
+                    if (!card.getAttribute('data-val')) card.setAttribute('data-val', '3500');
+                }
+
+                renderCard(card);
+                filterKanban();
+            }
+        }
+
+// Filtros
+        function filterKanban() {
+            const s = document.getElementById('kSearch').value.toLowerCase();
+            const p = document.getElementById('kFilterProd').value;
+            const status = document.getElementById('kFilterStatus').value;
+            const origemFiltro = document.getElementById('kFilterOrigem') ? document.getElementById('kFilterOrigem').value : ""; // 3. Captura o valor do filtro de origem
+            const vMin = parseFloat(document.getElementById('kFilterVal').value) || 0;
+
+            document.querySelectorAll('.k-card').forEach(card => {
+                const nome = card.getAttribute('data-nome').toLowerCase();
+                const cpf = card.getAttribute('data-cpf');
+                const prop = card.getAttribute('data-prop');
+                const cardProd = card.getAttribute('data-prod');
+                const cardOrigem = card.getAttribute('data-origem'); // Pega a origem do card
+                const cardVal = parseFloat(card.getAttribute('data-val')) || 0;
+                const cardStage = card.closest('.kanban-col').getAttribute('data-stage');
+
+                const matchS = nome.includes(s) || cpf.includes(s) || prop.includes(s);
+                const matchP = p === "" || cardProd === p;
+                const matchStatus = status === "" || cardStage === status;
+                const matchOrigem = origemFiltro === "" || cardOrigem === origemFiltro; // 4. Verifica se a origem bate
+                const matchV = vMin === 0 || cardVal >= vMin;
+
+                // 5. Adicionado matchOrigem na condição final
+                card.style.display = (matchS && matchP && matchStatus && matchOrigem && matchV) ? "block" : "none";
+            });
+            updateColCounts();
+        }
+
+        function clearKanbanFilters() {
+            document.getElementById('kSearch').value = '';
+            document.getElementById('kFilterProd').value = '';
+            document.getElementById('kFilterStatus').value = '';
+            if(document.getElementById('kFilterOrigem')) document.getElementById('kFilterOrigem').value = ''; // Limpa filtro de origem
+            document.getElementById('kFilterVal').value = '';
+            filterKanban();
+        }
+
+        function updateColCounts() {
+            document.querySelectorAll('.kanban-col').forEach(col => {
+                const visible = Array.from(col.querySelectorAll('.k-card')).filter(c => c.style.display !== 'none').length;
+                col.querySelector('.col-count').innerText = visible;
+            });
+        }
+
+        // Modal do Lead (Kanban)
+        function openLeadModal(el) {
+            document.getElementById('leadModal').style.display = 'flex';
+            
+            const stage = el.closest('.kanban-col').getAttribute('data-stage');
+            const prod = el.getAttribute('data-prod');
+            const val = el.getAttribute('data-val');
+            const nome = el.getAttribute('data-nome');
+            const origem = el.getAttribute('data-origem'); // Captura origem para o modal
+
+            document.getElementById('modal-nome').innerText = nome;
+            document.getElementById('modal-status').innerText = stage;
+            document.getElementById('m-avatar').innerText = nome.charAt(0);
+            
+            document.getElementById('modal-cpf').innerText = el.getAttribute('data-cpf').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+            document.getElementById('modal-tel').innerText = el.getAttribute('data-tel');
+            document.getElementById('modal-nasc').innerText = el.getAttribute('data-nasc');
+            document.getElementById('modal-end').innerText = el.getAttribute('data-end');
+            
+            // Popula a origem no modal (se você tiver um id="modal-origem" lá no HTML)
+            if (document.getElementById('modal-origem')) {
+                document.getElementById('modal-origem').innerText = origem || "Não informada";
+            }
+            
+            document.getElementById('modal-prop').innerText = "#" + el.getAttribute('data-prop');
+            document.getElementById('modal-prod').innerText = prod ? prod : "Não definido na etapa atual";
+            document.getElementById('modal-val').innerText = val ? parseFloat(val).toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) : "Não definido";
+
+            let msg = `Olá ${nome}, tudo bem? Sou o Alan da Crefaz.\n`;
+            if(stage === 'Novo') msg += `Recebemos seu contato. Como posso ajudar?`;
+            else if(stage === 'Prospectando') msg += `Estamos simulando as melhores condições para o seu crédito de ${prod}.`;
+            else if(stage === 'Negociando') msg += `Tenho uma proposta de R$ ${parseFloat(val).toLocaleString('pt-BR')} para você. Podemos seguir?`;
+            else msg += `Sua proposta #${el.getAttribute('data-prop')} está em análise!`;
+            
+            document.getElementById('modal-msg').value = msg;
+            lucide.createIcons();
+        }
+
+        function closeLeadModal() { document.getElementById('leadModal').style.display = 'none'; }
+        // --- FUNÇÃO DE ENVIAR MENSAGEM ---
+        function sendMessage(tipo, btn) {
+            const originalText = btn.innerHTML; // Guarda o texto e ícone original do botão
+            
+            // Muda o botão temporariamente
+            btn.innerHTML = `<i data-lucide="check" size="16"></i> Enviado!`;
+            btn.style.opacity = '0.7';
+            btn.style.pointerEvents = 'none'; // Impede duplo clique
+            lucide.createIcons(); // Recarrega o ícone de check
+
+            // Mostra o aviso flutuante
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = `${tipo} enviado com sucesso!`;
+            toast.style.bottom = '30px'; // Sobe o aviso
+
+            // Esconde o aviso e restaura o botão após 3 segundos
+            setTimeout(() => {
+                toast.style.bottom = '-60px'; // Desce o aviso
+                btn.innerHTML = originalText; // Restaura o botão original
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+                lucide.createIcons();
+            }, 3000);
+        }
+
+        // Inicializa cards do Kanban logo na abertura
+        renderAllCards();
+    </script>
+</body>
+</html>
