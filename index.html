@@ -122,6 +122,74 @@
             align-items: center;
             gap: 8px;
         }
+
+        .k-recompra-icon {
+            color: var(--success);
+            float: right;
+            margin-top: 2px;
+        }
+        .recompra-toggle-group {
+            display: flex;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            padding: 4px;
+            margin-top: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .btn-toggle {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        /* Estado quando "Não" está selecionado */
+        .btn-toggle.active-no {
+            background: var(--border);
+            color: white;
+        }
+
+        /* Estado quando "Sim" está selecionado - Verde Crefaz */
+        .btn-toggle.active-yes {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 2px 8px rgba(48, 198, 143, 0.3);
+        }
+
+        /* Botão Avançar Etapa no Modal */
+        .btn-next-stage {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-next-stage:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-next-stage:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+            transform: none;
+        }
     </style>
 </head>
 <body>
@@ -215,6 +283,9 @@
 
         <section id="kanban" class="page-content">
             <div class="filter-bar">
+                <button class="btn-update" onclick="openAddLeadModal()" style="background: var(--success); display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="plus-circle" size="16"></i> Adicionar Lead
+                </button>
                 <div class="filter-group"><label>Buscar (Nome, CPF, Proposta)</label><input type="text" id="kSearch" placeholder="Ex: 123.456..." onkeyup="filterKanban()" style="width: 250px;"></div>
                 <div class="filter-group">
                     <label>Produto</label>
@@ -233,6 +304,7 @@
                         <option value="Prospectando">Prospectando</option>
                         <option value="Negociando">Negociando</option>
                         <option value="Proposta Cadastrada">Proposta Cadastrada</option>
+                        <option value="Perdido">Perdido</option>
                         <option value="Ganho">Ganho</option>
                     </select>
                 </div>
@@ -253,7 +325,7 @@
                 <div class="kanban-col" data-stage="Novo" ondrop="drop(event)" ondragover="allowDrop(event)">
                     <div class="col-title">NOVO <span class="col-count">2</span></div>
                     <div class="kanban-cards-area">
-                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-n1" data-nome="Cadu Navarro" data-cpf="11122233344" data-prop="8821" data-prod="" data-val="" data-tel="(44) 99111-2222" data-nasc="10/05/1980" data-end="Rua A, 123" data-origem="Pré Aprovado" onclick="openLeadModal(this)"></div>
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-n1" data-nome="Cadu Navarro" data-cpf="11122233344" data-recompra="Sim" data-prop="8821" data-prod="" data-val="" data-tel="(44) 99111-2222" data-nasc="10/05/1980" data-end="Rua A, 123" data-origem="Pré Aprovado" onclick="openLeadModal(this)"></div>
                         <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-n2" data-nome="Mauro Paladino" data-cpf="55566677788" data-prop="8825" data-prod="" data-val="" data-tel="(11) 98888-7777" data-nasc="22/11/1992" data-end="Av Brasil, 90" data-origem="Quitado" onclick="openLeadModal(this)"></div>
                     </div>
                 </div>
@@ -261,7 +333,7 @@
                 <div class="kanban-col" data-stage="Prospectando" ondrop="drop(event)" ondragover="allowDrop(event)">
                     <div class="col-title">PROSPECTANDO <span class="col-count">3</span></div>
                     <div class="kanban-cards-area">
-                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-p0" data-nome="Alan Dutra" data-cpf="08263220938" data-prop="8900" data-prod="Energia" data-val="" data-tel="(44) 99999-2222" data-nasc="24/10/2002" data-end="Rua C, 45" data-origem="Balcão" onclick="openLeadModal(this)"></div>
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-p0" data-nome="Alan Dutra" data-cpf="08263220938" data-recompra="Sim" data-prop="8900" data-prod="Energia" data-val="" data-tel="(44) 99999-2222" data-nasc="24/10/2002" data-end="Rua C, 45" data-origem="Balcão" onclick="openLeadModal(this)"></div>
                         <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-p1" data-nome="Ricardo Furtado" data-cpf="44433322211" data-prop="8901" data-prod="Energia" data-val="" data-tel="(44) 99999-1111" data-nasc="12/08/1988" data-end="Rua B, 45" data-origem="Pré Aprovado" onclick="openLeadModal(this)"></div>
                         <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-p2" data-nome="Marcos Serrano" data-cpf="12312312312" data-prop="8902" data-prod="Trabalhador" data-val="" data-tel="(21) 91234-5678" data-nasc="30/03/1995" data-end="Rua C, 88" data-origem="Balcão" onclick="openLeadModal(this)"></div>
                     </div>
@@ -279,7 +351,14 @@
                 <div class="kanban-col" data-stage="Proposta Cadastrada" ondrop="drop(event)" ondragover="allowDrop(event)">
                     <div class="col-title">EM ANÁLISE <span class="col-count">1</span></div>
                     <div class="kanban-cards-area">
-                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-pc1" data-nome="Allan Ribeiro" data-cpf="98712365400" data-prop="9100" data-prod="Auto" data-val="15000" data-tel="(21) 97894-5612" data-nasc="02/02/1989" data-end="Rua G, 21" data-origem="Pré Aprovado" onclick="openLeadModal(this)"></div>
+                        <div class="k-card" draggable="true" ondragstart="drag(event)" id="k-pc1" data-nome="Allan Ribeiro" data-cpf="98712365400" data-recompra="Sim" data-prop="9100" data-prod="Auto" data-val="15000" data-tel="(21) 97894-5612" data-nasc="02/02/1989" data-end="Rua G, 21" data-origem="Pré Aprovado" onclick="openLeadModal(this)"></div>
+                    </div>
+                </div>
+
+                <div class="kanban-col" data-stage="Perdido" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="col-title">PERDIDO <span class="col-count">1</span></div>
+                    <div class="kanban-cards-area">
+                    
                     </div>
                 </div>
 
@@ -380,102 +459,7 @@
                 </div>
             </div>
 
-            <script>
-                // LÓGICA QUALIFICAÇÃO INDIVIDUAL
-                function simulateIndQual() {
-                    const input = document.getElementById('cpf-ind-input').value;
-                    if(!input) {
-                        showToast('Digite um CPF válido!');
-                        return;
-                    }
-                    
-                    document.getElementById('result-ind').style.display = 'none';
-                    document.getElementById('loader-ind').style.display = 'block';
-                    
-                    // Simula tempo de requisição de API
-                    setTimeout(() => {
-                        document.getElementById('loader-ind').style.display = 'none';
-                        document.getElementById('result-ind').style.display = 'block';
-                        lucide.createIcons();
-                    }, 1200);
-                }
-
-                // LÓGICA QUALIFICAÇÃO LOTE (CSV)
-                const dropZone = document.getElementById('drop-zone');
-                const btnProcess = document.getElementById('btn-process-csv');
-
-                // Simula o arrastar e soltar (efeitos visuais)
-                dropZone.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    dropZone.classList.add('dragover');
-                });
-                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-                dropZone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    dropZone.classList.remove('dragover');
-                    fileSelected({ files: e.dataTransfer.files });
-                });
-
-                function fileSelected(input) {
-                    if(input.files && input.files.length > 0) {
-                        const fileName = input.files[0].name;
-                        dropZone.innerHTML = `<i data-lucide="file-check" size="36" style="color: var(--success); margin-bottom: 10px;"></i>
-                                              <p style="font-weight: 600; font-size: 14px; color: var(--success);">Arquivo Carregado!</p>
-                                              <p style="font-size: 11px; color: var(--text-muted);">${fileName}</p>`;
-                        btnProcess.disabled = false;
-                        btnProcess.style.background = 'var(--primary)';
-                        btnProcess.style.cursor = 'pointer';
-                        lucide.createIcons();
-                    }
-                }
-
-                function simulateBatchQual() {
-                    document.getElementById('result-batch').style.display = 'none';
-                    document.getElementById('loader-batch').style.display = 'block';
-                    
-                    // Simula o processamento de 1000 linhas
-                    setTimeout(() => {
-                        document.getElementById('loader-batch').style.display = 'none';
-                        document.getElementById('result-batch').style.display = 'block';
-                        lucide.createIcons();
-                    }, 2000);
-                }
-
-                // AÇÃO COMUM: MANDAR PARA O KANBAN
-                function registerCRM(type) {
-                    showToast('Leads registrados com sucesso na etapa NOVO!');
-                    
-                    if(type === 'ind') {
-                        document.getElementById('result-ind').style.display = 'none';
-                        document.getElementById('cpf-ind-input').value = '';
-                    } else {
-                        document.getElementById('result-batch').style.display = 'none';
-                        dropZone.innerHTML = `<i data-lucide="upload-cloud" size="36" style="color: var(--primary); margin-bottom: 10px;"></i>
-                                              <p style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">Arraste sua base CSV para cá</p>
-                                              <p style="font-size: 11px; color: var(--text-muted);">Ou clique para selecionar o arquivo no computador.</p>`;
-                        btnProcess.disabled = true;
-                        btnProcess.style.background = '#444';
-                        btnProcess.style.cursor = 'not-allowed';
-                    }
-                    lucide.createIcons();
-                }
-
-                // TOAST REUTILIZÁVEL (Se não existir na raiz, cria e exibe)
-                function showToast(msg) {
-                    let toast = document.getElementById('toast-msg');
-                    if(!toast) {
-                        toast = document.createElement('div');
-                        toast.id = 'toast-msg';
-                        toast.style.cssText = 'position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: bottom 0.4s ease; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px;';
-                        document.body.appendChild(toast);
-                    }
-                    toast.innerHTML = `<i data-lucide="info" size="18"></i> <span>${msg}</span>`;
-                    lucide.createIcons();
-                    
-                    toast.style.bottom = '30px';
-                    setTimeout(() => { toast.style.bottom = '-60px'; }, 3000);
-                }
-            </script>
+            
         </section>
 <section id="leads" class="page-content">
             <div style="margin-bottom: 25px;">
@@ -554,86 +538,7 @@
                 </div>
             </div>
 
-            <script>
-                // Altera o label da data dependendo da Origem
-                function updateDateLabel() {
-                    const origem = document.getElementById('lead-origem').value;
-                    const label = document.getElementById('lead-date-label');
-                    const thData = document.getElementById('th-data-type');
-                    
-                    if (origem.includes('Quitados')) {
-                        label.innerText = 'Data de Últ. Pagamento (Início)';
-                        if(thData) thData.innerText = 'ÚLT. PAGAMENTO';
-                    } else {
-                        label.innerText = 'Data de Digitação (Início)';
-                        if(thData) thData.innerText = 'DIGITAÇÃO';
-                    }
-                }
-
-                // Simula a geração da base
-                function generateLeads() {
-                    document.getElementById('lead-results').style.display = 'none';
-                    document.getElementById('loader-leads').style.display = 'block';
-
-                    const origem = document.getElementById('lead-origem').value;
-
-                    // Simula tempo de rede e processamento
-                    setTimeout(() => {
-                        document.getElementById('loader-leads').style.display = 'none';
-                        document.getElementById('lead-results').style.display = 'block';
-
-                        // Gera números aleatórios mas realistas
-                        const total = Math.floor(Math.random() * 8000) + 2000; // Entre 2k e 10k
-                        const aptos = Math.floor(total * (Math.random() * 0.3 + 0.5)); // Entre 50% e 80% do total
-
-                        document.getElementById('res-total').innerText = total.toLocaleString('pt-BR');
-                        document.getElementById('res-aptos').innerText = aptos.toLocaleString('pt-BR');
-
-                        // Gera 10 linhas para a prévia
-                        const tbody = document.getElementById('lead-table-body');
-                        tbody.innerHTML = '';
-                        
-                        const nomes = ['Carlos Mendes', 'Mariana Costa', 'Fernando Silva', 'Juliana Alves', 'Roberto Dias', 'Amanda Rocha', 'Tiago Santos', 'Beatriz Lima', 'Ricardo Gomes', 'Vanessa Souza'];
-                        const cidades = ['Maringá/PR', 'São Paulo/SP', 'Campinas/MG', 'Londrina/PR', 'Curitiba/PR'];
-                        
-                        for(let i = 0; i < 10; i++) {
-                            const cpf = `***.${Math.floor(Math.random()*900+100)}.***-${Math.floor(Math.random()*90+10)}`;
-                            const cep = `87${Math.floor(Math.random()*900+100)}-000`;
-                            const nasc = `${Math.floor(Math.random()*28+1).toString().padStart(2,'0')}/${Math.floor(Math.random()*12+1).toString().padStart(2,'0')}/19${Math.floor(Math.random()*30+60)}`;
-                            const dataRef = `0${Math.floor(Math.random()*8+1)}/04/2026`;
-
-                            tbody.innerHTML += `
-                                <tr>
-                                    <td style="font-weight: 600;">${cpf}</td>
-                                    <td>${nomes[i]}</td>
-                                    <td>${nasc}</td>
-                                    <td>${cep}</td>
-                                    <td>${cidades[Math.floor(Math.random()*cidades.length)]}</td>
-                                    <td><span class="status-pill" style="background: rgba(228, 119, 24, 0.2); color: var(--primary); border: 1px solid var(--primary);">${origem}</span></td>
-                                    <td>${dataRef}</td>
-                                </tr>
-                            `;
-                        }
-
-                        lucide.createIcons();
-                    }, 1500);
-                }
-
-                // Simula o envio para o Kanban
-                function sendLeadsToKanban() {
-                    const aptos = document.getElementById('res-aptos').innerText;
-                    
-                    // Verifica se a função showToast (criada no passo da qualificação) existe
-                    if(typeof showToast === 'function') {
-                        showToast(`${aptos} Leads foram inseridos no seu Kanban (Coluna: NOVO) com sucesso!`);
-                    } else {
-                        alert(`${aptos} Leads foram inseridos no seu Kanban com sucesso!`);
-                    }
-                    
-                    // Reseta a tela
-                    document.getElementById('lead-results').style.display = 'none';
-                }
-            </script>
+            
         </section>
 <section id="campanha" class="page-content">
             <div style="margin-bottom: 25px;">
@@ -755,11 +660,17 @@
 
     <div id="leadModal" class="modal-overlay">
         <div class="modal-content-large">
+            <input type="hidden" id="modal-current-lead-id">
             <div class="modal-header">
                 <div style="display:flex; align-items:center; gap:15px">
                     <div id="m-avatar" style="width:50px; height:50px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px;"></div>
                     <div>
-                        <h2 id="modal-nome" style="margin:0">Nome do Cliente</h2>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <h2 id="modal-nome" style="margin:0">Nome do Cliente</h2>
+                            <button id="btn-avancar-modal" class="btn-next-stage" onclick="avancarEtapaModal()">
+                                <i data-lucide="arrow-right-circle" size="14"></i> Avançar Etapa
+                            </button>
+                        </div>
                         <span id="modal-status" class="status-pill" style="background:var(--primary); padding:4px 8px; display:inline-block; margin-top:4px;">Status</span>
                     </div>
                 </div>
@@ -780,6 +691,14 @@
                         <h3><i data-lucide="briefcase" size="16"></i> Oportunidade Crefaz</h3>
                         <div class="detail-grid">
                             <div class="detail-item"><label>Nº Proposta</label><p id="modal-prop">-</p></div>
+                            <div class="detail-item">
+                                <label>Cliente Recompra?</label>
+                                <div class="recompra-toggle-group">
+                                    <button type="button" class="btn-toggle" id="opt-recompra-nao" onclick="setRecompra('Não')">Não</button>
+                                    <button type="button" class="btn-toggle" id="opt-recompra-sim" onclick="setRecompra('Sim')">Sim</button>
+                                </div>
+                                <input type="hidden" id="modal-recompra" value="Não">
+                            </div>
                             <div class="detail-item"><label>Produto</label><p id="modal-prod" style="color:var(--blue); font-weight:700; font-size:16px;">-</p></div>
                             <div class="detail-item"><label>Valor Solicitado</label><p id="modal-val" style="color:var(--success); font-weight:700; font-size:18px">-</p></div>
                             <div class="detail-item" style="grid-column: span 2;"><label>Origem do Cliente</label><p id="modal-origem" style="color: var(--primary);">-</p></div>
@@ -800,13 +719,273 @@
                         <strong style="display:block; margin-bottom:5px; font-size:12px;"><i data-lucide="bot" size="14"></i> Automação Ativa:</strong>
                         Se o produto e o valor forem preenchidos, o sistema avançará a etapa do Kanban automaticamente.
                     </div>
+                    <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
+                        <h3 style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="history" size="14"></i> Histórico de Atividades
+                        </h3>
+                        <div id="modal-historico" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                            <p style="font-size: 11px; color: var(--text-muted); font-style: italic; text-align: center; padding: 10px;">Nenhuma movimentação registrada.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <div id="addLeadModal" class="modal-overlay">
+    <div class="modal-content-large" style="width: 500px;"> <div class="modal-header">
+            <h2 style="margin:0; font-size: 18px;"><i data-lucide="user-plus" style="vertical-align: middle; margin-right: 8px;"></i>Novo Lead Manual</h2>
+            <button onclick="closeAddLeadModal()" style="background:none; border:none; color:white; font-size:28px; cursor:pointer">&times;</button>
+        </div>
+        <div style="padding: 30px;">
+            <div class="filter-group" style="margin-bottom: 20px;">
+                <label>Nome Completo</label>
+                <input type="text" id="new-lead-nome" placeholder="Ex: João Silva" style="width: 100%; padding: 12px; font-size: 14px;">
+            </div>
+            <div class="filter-group" style="margin-bottom: 25px;">
+                <label>CPF (Apenas números)</label>
+                <input type="text" id="new-lead-cpf" placeholder="000.000.000-00" style="width: 100%; padding: 12px; font-size: 14px;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-update" onclick="closeAddLeadModal()" style="flex: 1; background: #455060;">Cancelar</button>
+                <button class="btn-update" onclick="saveNewLead()" style="flex: 2; background: var(--success);">Criar Lead</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script>
-        // --- LÓGICA DA CAMPANHA (COMUNICAÇÃO) ---
+    
+<script>
+// LÓGICA QUALIFICAÇÃO INDIVIDUAL
+                function simulateIndQual() {
+                    const input = document.getElementById('cpf-ind-input').value;
+                    if(!input) {
+                        showToast('Digite um CPF válido!');
+                        return;
+                    }
+                    
+                    document.getElementById('result-ind').style.display = 'none';
+                    document.getElementById('loader-ind').style.display = 'block';
+                    
+                    // Simula tempo de requisição de API
+                    setTimeout(() => {
+                        document.getElementById('loader-ind').style.display = 'none';
+                        document.getElementById('result-ind').style.display = 'block';
+                        lucide.createIcons();
+                    }, 1200);
+                }
+
+                // LÓGICA QUALIFICAÇÃO LOTE (CSV)
+                const dropZone = document.getElementById('drop-zone');
+                const btnProcess = document.getElementById('btn-process-csv');
+
+                // Simula o arrastar e soltar (efeitos visuais)
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                });
+                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    fileSelected({ files: e.dataTransfer.files });
+                });
+
+                function fileSelected(input) {
+                    if(input.files && input.files.length > 0) {
+                        const fileName = input.files[0].name;
+                        dropZone.innerHTML = `<i data-lucide="file-check" size="36" style="color: var(--success); margin-bottom: 10px;"></i>
+                                              <p style="font-weight: 600; font-size: 14px; color: var(--success);">Arquivo Carregado!</p>
+                                              <p style="font-size: 11px; color: var(--text-muted);">${fileName}</p>`;
+                        btnProcess.disabled = false;
+                        btnProcess.style.background = 'var(--primary)';
+                        btnProcess.style.cursor = 'pointer';
+                        lucide.createIcons();
+                    }
+                }
+
+                function simulateBatchQual() {
+                    document.getElementById('result-batch').style.display = 'none';
+                    document.getElementById('loader-batch').style.display = 'block';
+                    
+                    // Simula o processamento de 1000 linhas
+                    setTimeout(() => {
+                        document.getElementById('loader-batch').style.display = 'none';
+                        document.getElementById('result-batch').style.display = 'block';
+                        lucide.createIcons();
+                    }, 2000);
+                }
+
+                // AÇÃO COMUM: MANDAR PARA O KANBAN
+                function registerCRM(type) {
+                    showToast('Leads registrados com sucesso na etapa NOVO!');
+                    
+                    if(type === 'ind') {
+                        document.getElementById('result-ind').style.display = 'none';
+                        document.getElementById('cpf-ind-input').value = '';
+                    } else {
+                        document.getElementById('result-batch').style.display = 'none';
+                        dropZone.innerHTML = `<i data-lucide="upload-cloud" size="36" style="color: var(--primary); margin-bottom: 10px;"></i>
+                                              <p style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">Arraste sua base CSV para cá</p>
+                                              <p style="font-size: 11px; color: var(--text-muted);">Ou clique para selecionar o arquivo no computador.</p>`;
+                        btnProcess.disabled = true;
+                        btnProcess.style.background = '#444';
+                        btnProcess.style.cursor = 'not-allowed';
+                    }
+                    lucide.createIcons();
+                }
+
+                // TOAST REUTILIZÁVEL (Se não existir na raiz, cria e exibe)
+                function showToast(msg) {
+                    let toast = document.getElementById('toast-msg');
+                    if(!toast) {
+                        toast = document.createElement('div');
+                        toast.id = 'toast-msg';
+                        toast.style.cssText = 'position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: bottom 0.4s ease; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px;';
+                        document.body.appendChild(toast);
+                    }
+                    toast.innerHTML = `<i data-lucide="info" size="18"></i> <span>${msg}</span>`;
+                    lucide.createIcons();
+                    
+                    toast.style.bottom = '30px';
+                    setTimeout(() => { toast.style.bottom = '-60px'; }, 3000);
+                }
+</script>
+<script>
+// Altera o label da data dependendo da Origem
+                function updateDateLabel() {
+                    const origem = document.getElementById('lead-origem').value;
+                    const label = document.getElementById('lead-date-label');
+                    const thData = document.getElementById('th-data-type');
+                    
+                    if (origem.includes('Quitados')) {
+                        label.innerText = 'Data de Últ. Pagamento (Início)';
+                        if(thData) thData.innerText = 'ÚLT. PAGAMENTO';
+                    } else {
+                        label.innerText = 'Data de Digitação (Início)';
+                        if(thData) thData.innerText = 'DIGITAÇÃO';
+                    }
+                }
+
+                // Simula a geração da base
+                function generateLeads() {
+                    document.getElementById('lead-results').style.display = 'none';
+                    document.getElementById('loader-leads').style.display = 'block';
+
+                    const origem = document.getElementById('lead-origem').value;
+
+                    // Simula tempo de rede e processamento
+                    setTimeout(() => {
+                        document.getElementById('loader-leads').style.display = 'none';
+                        document.getElementById('lead-results').style.display = 'block';
+
+                        // Gera números aleatórios mas realistas
+                        const total = Math.floor(Math.random() * 8000) + 2000; // Entre 2k e 10k
+                        const aptos = Math.floor(total * (Math.random() * 0.3 + 0.5)); // Entre 50% e 80% do total
+
+                        document.getElementById('res-total').innerText = total.toLocaleString('pt-BR');
+                        document.getElementById('res-aptos').innerText = aptos.toLocaleString('pt-BR');
+
+                        // Gera 10 linhas para a prévia
+                        const tbody = document.getElementById('lead-table-body');
+                        tbody.innerHTML = '';
+                        
+                        const nomes = ['Carlos Mendes', 'Mariana Costa', 'Fernando Silva', 'Juliana Alves', 'Roberto Dias', 'Amanda Rocha', 'Tiago Santos', 'Beatriz Lima', 'Ricardo Gomes', 'Vanessa Souza'];
+                        const cidades = ['Maringá/PR', 'São Paulo/SP', 'Campinas/MG', 'Londrina/PR', 'Curitiba/PR'];
+                        
+                        for(let i = 0; i < 10; i++) {
+                            const cpf = `***.${Math.floor(Math.random()*900+100)}.***-${Math.floor(Math.random()*90+10)}`;
+                            const cep = `87${Math.floor(Math.random()*900+100)}-000`;
+                            const nasc = `${Math.floor(Math.random()*28+1).toString().padStart(2,'0')}/${Math.floor(Math.random()*12+1).toString().padStart(2,'0')}/19${Math.floor(Math.random()*30+60)}`;
+                            const dataRef = `0${Math.floor(Math.random()*8+1)}/04/2026`;
+
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td style="font-weight: 600;">${cpf}</td>
+                                    <td>${nomes[i]}</td>
+                                    <td>${nasc}</td>
+                                    <td>${cep}</td>
+                                    <td>${cidades[Math.floor(Math.random()*cidades.length)]}</td>
+                                    <td><span class="status-pill" style="background: rgba(228, 119, 24, 0.2); color: var(--primary); border: 1px solid var(--primary);">${origem}</span></td>
+                                    <td>${dataRef}</td>
+                                </tr>
+                            `;
+                        }
+
+                        lucide.createIcons();
+                    }, 1500);
+                }
+
+                // Simula o envio para o Kanban
+                function sendLeadsToKanban() {
+                    const aptos = document.getElementById('res-aptos').innerText;
+                    
+                    // Verifica se a função showToast (criada no passo da qualificação) existe
+                    if(typeof showToast === 'function') {
+                        showToast(`${aptos} Leads foram inseridos no seu Kanban (Coluna: NOVO) com sucesso!`);
+                    } else {
+                        alert(`${aptos} Leads foram inseridos no seu Kanban com sucesso!`);
+                    }
+                    
+                    // Reseta a tela
+                    document.getElementById('lead-results').style.display = 'none';
+                }
+                // Abre o modal em vez de usar o prompt feio
+                function openAddLeadModal() {
+                    document.getElementById('addLeadModal').style.display = 'flex';
+                    document.getElementById('new-lead-nome').value = '';
+                    document.getElementById('new-lead-cpf').value = '';
+                    document.getElementById('new-lead-nome').focus();
+                    lucide.createIcons();
+                }
+
+                function closeAddLeadModal() {
+                    document.getElementById('addLeadModal').style.display = 'none';
+                }
+
+                // Lógica de salvamento com a estrutura de card que você já usa
+                function saveNewLead() {
+                    const nome = document.getElementById('new-lead-nome').value;
+                    const cpf = document.getElementById('new-lead-cpf').value;
+
+                    if (!nome || !cpf) {
+                        alert("Por favor, preencha nome e CPF.");
+                        return;
+                    }
+
+                    const id = 'k-new-' + Date.now();
+                    const newCard = document.createElement('div');
+                    newCard.className = 'k-card';
+                    newCard.draggable = true;
+                    newCard.id = id;
+                    newCard.setAttribute('onclick', 'openLeadModal(this)');
+                    newCard.setAttribute('ondragstart', 'drag(event)');
+                    
+                    // Atributos de dados baseados no seu sistema
+                    newCard.setAttribute('data-nome', nome);
+                    newCard.setAttribute('data-cpf', cpf);
+                    newCard.setAttribute('data-prop', Math.floor(Math.random() * 9000));
+                    newCard.setAttribute('data-origem', 'Cadastro Manual');
+                    newCard.setAttribute('data-recompra', 'Não');
+                    newCard.setAttribute('data-tel', '(00) 00000-0000'); // Valor padrão
+                    newCard.setAttribute('data-nasc', '01/01/1990'); // Valor padrão
+
+                    // Adiciona na coluna "Novo"
+                    const colunaNovo = document.querySelector('.kanban-col[data-stage="Novo"] .kanban-cards-area');
+                    if (colunaNovo) {
+                        colunaNovo.appendChild(newCard);
+                        renderCard(newCard);
+                        updateColCounts();
+                        closeAddLeadModal();
+                        
+                        // Usa o seu sistema de Toast
+                        if (typeof showToast === 'function') {
+                            showToast("Novo lead adicionado com sucesso!");
+                        }
+                    }
+                }
+</script>
+<script>
+// --- LÓGICA DA CAMPANHA (COMUNICAÇÃO) ---
         
         function simulateCampFilter() {
             const tbody = document.getElementById('camp-table-body');
@@ -978,6 +1157,51 @@
 
         // --- LÓGICA KANBAN ---
 
+        // Função para adicionar um item ao histórico visual
+        function addHistoryItem(texto) {
+            const container = document.getElementById('modal-historico');
+            if (!container) return; // Segurança caso o container não exista no DOM
+            const agora = new Date();
+            const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            // Remove a mensagem de "Nenhuma movimentação" se ela existir
+            if (container.querySelector('p')) {
+                container.innerHTML = '';
+            }
+
+            const item = document.createElement('div');
+            item.style.cssText = 'background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; border-left: 2px solid var(--primary); font-size: 11px;';
+            item.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <strong style="color: var(--primary);">Sistema</strong>
+                    <span style="color: var(--text-muted); font-size: 10px;">${hora}</span>
+                </div>
+                <div style="color: var(--text-main);">${texto}</div>
+            `;
+            
+            container.prepend(item); // Adiciona o mais recente no topo
+            lucide.createIcons();
+        }
+
+            function updateRecompraFromModal() {
+                const statusRecompra = document.getElementById('modal-recompra').value;
+                const currentLeadId = document.getElementById('modal-current-lead-id').value;
+                const card = document.getElementById(currentLeadId);
+
+                if (card) {
+                    const antigoStatus = card.getAttribute('data-recompra') || "Não";
+                    
+                    if (antigoStatus !== statusRecompra) {
+                        card.setAttribute('data-recompra', statusRecompra);
+                        renderCard(card);
+                        addHistoryItem(`Status de recompra alterado para: ${statusRecompra}`);
+                        
+                        if (typeof showToast === 'function') {
+                            showToast(`Status atualizado para: ${statusRecompra}`);
+                        }
+                    }
+                }
+            }
         // Renderizador de Cards (Responsável por aplicar cor/produto/valor visualmente baseando nos dados)
             function renderCard(card) {
             const nome = card.getAttribute('data-nome');
@@ -985,18 +1209,23 @@
             const prod = card.getAttribute('data-prod');
             const val = card.getAttribute('data-val');
             const origem = card.getAttribute('data-origem'); // 1. Adicionado a captura da origem
+            const recompra = card.getAttribute('data-recompra');
             const stage = card.closest('.kanban-col').getAttribute('data-stage');
 
             let html = '';
             let bColor = 'var(--border)';
 
             if (stage === 'Ganho') bColor = 'var(--success)';
+            else if (stage === 'Perdido') bColor = 'var(--danger)';
             else if (stage === 'Proposta Cadastrada') bColor = '#666';
             else if (stage === 'Negociando') bColor = 'var(--primary)';
             else if (stage === 'Prospectando') bColor = 'var(--blue)';
 
             card.style.borderLeft = `4px solid ${bColor}`;
 
+            if (recompra === 'Sim') {
+                html += `<i data-lucide="refresh-cw" class="k-recompra-icon" size="14" title="Cliente Recompra"></i>`;
+            }
             if (prod) html += `<div class="k-tag" style="background:${bColor}">${prod}</div>`;
             html += `<div class="k-name">${nome}</div>`;
             html += `<div class="k-info">Prop: #${prop}</div>`;
@@ -1008,6 +1237,7 @@
             if (stage === 'Ganho') html += `<div style="font-size:9px; color:var(--success); font-weight:bold; margin-top:5px;">CONCEDIDO</div>`;
 
             card.innerHTML = html;
+            lucide.createIcons();
         }
 
         function renderAllCards() {
@@ -1045,6 +1275,72 @@
             }
         }
 
+        function setRecompra(valor) {
+            const input = document.getElementById('modal-recompra');
+            const btnSim = document.getElementById('opt-recompra-sim');
+            const btnNao = document.getElementById('opt-recompra-nao');
+            
+            if(!input || !btnSim || !btnNao) return; // Segurança contra erros
+            input.value = valor;
+
+            // Alterna as classes visuais
+            if (valor === 'Sim') {
+                btnSim.classList.add('active-yes');
+                btnNao.classList.remove('active-no');
+            } else {
+                btnSim.classList.remove('active-yes');
+                btnNao.classList.add('active-no');
+            }
+
+            // Chama sua função original que já atualiza o card e mostra o ícone
+            updateRecompraFromModal();
+        }
+        function avancarEtapaModal() {
+            const currentLeadId = document.getElementById('modal-current-lead-id').value;
+            const card = document.getElementById(currentLeadId);
+            if (!card) return;
+
+            // Define a ordem das etapas
+            const etapas = ["Novo", "Prospectando", "Negociando", "Proposta Cadastrada", "Ganho"];
+            const currentStage = card.closest('.kanban-col').getAttribute('data-stage');
+            const currentIndex = etapas.indexOf(currentStage);
+
+            // Se não for a última etapa (Ganho)
+            if (currentIndex >= 0 && currentIndex < etapas.length - 1) {
+                const nextStage = etapas[currentIndex + 1];
+                const targetCol = document.querySelector(`.kanban-col[data-stage="${nextStage}"] .kanban-cards-area`);
+
+                if (targetCol) {
+                    // Move o card fisicamente
+                    targetCol.appendChild(card);
+                    
+                    // Regras de negócio automáticas ao avançar (mesma lógica do Drag & Drop)
+                    if (nextStage === 'Prospectando' && !card.getAttribute('data-prod')) {
+                        card.setAttribute('data-prod', 'Energia');
+                    } else if (nextStage === 'Negociando' || nextStage === 'Proposta Cadastrada') {
+                        if (!card.getAttribute('data-prod')) card.setAttribute('data-prod', 'Trabalhador');
+                        if (!card.getAttribute('data-val')) card.setAttribute('data-val', '3500');
+                    }
+
+                    // Atualiza o visual
+                    renderCard(card);
+                    updateColCounts();
+                    
+                    // Atualiza o Modal em tempo real
+                    document.getElementById('modal-status').innerText = nextStage;
+                    addHistoryItem(`Etapa avançada para: ${nextStage}`);
+                    
+                    // Se chegou na última etapa, desabilita o botão
+                    if (nextStage === "Ganho") {
+                        document.getElementById('btn-avancar-modal').disabled = true;
+                    }
+
+                    if (typeof showToast === 'function') {
+                        showToast(`Lead movido para ${nextStage}`);
+                    }
+                }
+            }
+        }
 // Filtros
         function filterKanban() {
             const s = document.getElementById('kSearch').value.toLowerCase();
@@ -1093,12 +1389,28 @@
         // Modal do Lead (Kanban)
         function openLeadModal(el) {
             document.getElementById('leadModal').style.display = 'flex';
-            
+            document.getElementById('modal-current-lead-id').value = el.id;
+
             const stage = el.closest('.kanban-col').getAttribute('data-stage');
             const prod = el.getAttribute('data-prod');
             const val = el.getAttribute('data-val');
             const nome = el.getAttribute('data-nome');
-            const origem = el.getAttribute('data-origem'); // Captura origem para o modal
+            const origem = el.getAttribute('data-origem');
+
+            const btnAvancar = document.getElementById('btn-avancar-modal');
+            if (btnAvancar) {
+                const stage = el.closest('.kanban-col').getAttribute('data-stage');
+                // Desabilita se for Ganho ou Perdido
+                btnAvancar.disabled = (stage === "Ganho" || stage === "Perdido");
+            }
+            
+            // CORREÇÃO AQUI: Pegando o valor correto e aplicando nos botões
+            const statusRecompra = el.getAttribute('data-recompra') || "Não";
+            setRecompra(statusRecompra); 
+
+            // Limpa o histórico visual e adiciona a entrada de abertura
+            document.getElementById('modal-historico').innerHTML = '';
+            addHistoryItem("Lead visualizado por Alan Dutra.");
 
             document.getElementById('modal-nome').innerText = nome;
             document.getElementById('modal-status').innerText = stage;
@@ -1109,7 +1421,6 @@
             document.getElementById('modal-nasc').innerText = el.getAttribute('data-nasc');
             document.getElementById('modal-end').innerText = el.getAttribute('data-end');
             
-            // Popula a origem no modal (se você tiver um id="modal-origem" lá no HTML)
             if (document.getElementById('modal-origem')) {
                 document.getElementById('modal-origem').innerText = origem || "Não informada";
             }
@@ -1129,33 +1440,51 @@
         }
 
         function closeLeadModal() { document.getElementById('leadModal').style.display = 'none'; }
-        // --- FUNÇÃO DE ENVIAR MENSAGEM ---
+
+        // --- FUNÇÃO DE ENVIAR MENSAGEM (CORRIGIDA) ---
         function sendMessage(tipo, btn) {
-            const originalText = btn.innerHTML; // Guarda o texto e ícone original do botão
+            // 1. Salva o conteúdo original apenas se ainda não foi salvo
+            // Isso evita que o botão fique travado com o texto "Enviado!" permanentemente
+            if (!btn.getAttribute('data-original-content')) {
+                btn.setAttribute('data-original-content', btn.innerHTML);
+            }
             
-            // Muda o botão temporariamente
+            const originalContent = btn.getAttribute('data-original-content');
+
+            // 2. Feedback Visual Imediato
             btn.innerHTML = `<i data-lucide="check" size="16"></i> Enviado!`;
-            btn.style.opacity = '0.7';
-            btn.style.pointerEvents = 'none'; // Impede duplo clique
-            lucide.createIcons(); // Recarrega o ícone de check
+            btn.style.opacity = '0.5';
+            btn.style.pointerEvents = 'none'; // Trava o clique
+            lucide.createIcons();
 
-            // Mostra o aviso flutuante
+            // 3. Registro no Histórico (usando try/catch para não travar o reset do botão)
+            try {
+                addHistoryItem(`Enviado contato via ${tipo} para o cliente.`);
+            } catch (e) {
+                console.error("Erro ao registrar histórico:", e);
+            }
+
+            // 4. Toast de Sucesso
             const toast = document.getElementById('toast-msg');
-            document.getElementById('toast-text').innerText = `${tipo} enviado com sucesso!`;
-            toast.style.bottom = '30px'; // Sobe o aviso
+            const toastText = document.getElementById('toast-text');
+            if (toast && toastText) {
+                toastText.innerText = `${tipo} enviado com sucesso!`;
+                toast.style.bottom = '30px';
+            }
 
-            // Esconde o aviso e restaura o botão após 3 segundos
+            // 5. Reset Garantido após 3 segundos
             setTimeout(() => {
-                toast.style.bottom = '-60px'; // Desce o aviso
-                btn.innerHTML = originalText; // Restaura o botão original
+                btn.innerHTML = originalContent;
                 btn.style.opacity = '1';
-                btn.style.pointerEvents = 'auto';
+                btn.style.pointerEvents = 'auto'; // Destrava o clique
+                
+                if (toast) toast.style.bottom = '-60px';
+                
                 lucide.createIcons();
             }, 3000);
         }
-
         // Inicializa cards do Kanban logo na abertura
         renderAllCards();
-    </script>
+</script>
 </body>
 </html>
