@@ -190,6 +190,46 @@
             cursor: not-allowed;
             transform: none;
         }
+
+        .custom-select {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 8px;
+            margin-top: 8px;
+            outline: none;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .custom-select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Estilizando as opções para não ficarem brancas em alguns navegadores */
+        .custom-select option {
+            background: var(--bg-sidebar);
+            color: white;
+        }
+        /* Adicione ao seu bloco <style> */
+        .custom-select {
+            width: 100%;
+            padding: 8px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 6px;
+            margin-top: 5px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .custom-select option {
+            background: var(--bg-card);
+        }
     </style>
 </head>
 <body>
@@ -715,6 +755,9 @@
                             <button id="btn-avancar-modal" class="btn-next-stage" onclick="avancarEtapaModal()">
                                 <i data-lucide="arrow-right-circle" size="14"></i> Avançar Etapa
                             </button>
+                            <button id="btn-perder-modal" class="btn-next-stage" style="background: var(--danger); margin-left: 8px;" onclick="perderNegocioModal()">
+                                <i data-lucide="thumbs-down" size="14"></i> Perder
+                            </button>
                         </div>
                         <span id="modal-status" class="status-pill" style="background:var(--primary); padding:4px 8px; display:inline-block; margin-top:4px;">Status</span>
                     </div>
@@ -747,6 +790,16 @@
                             <div class="detail-item"><label>Produto</label><p id="modal-prod" style="color:var(--blue); font-weight:700; font-size:16px;">-</p></div>
                             <div class="detail-item"><label>Valor Solicitado</label><p id="modal-val" style="color:var(--success); font-weight:700; font-size:18px">-</p></div>
                             <div class="detail-item" style="grid-column: span 2;"><label>Origem do Cliente</label><p id="modal-origem" style="color: var(--primary);">-</p></div>
+                            <div class="detail-item" style="grid-column: span 2;">
+                                <label for="modal-motivo-perdido-select">Motivo de Perdido</label>
+                                <select id="modal-motivo-perdido-select" class="custom-select">
+                                    <option value="" disabled selected>Selecione um motivo...</option>
+                                    <option value="Pago em Outro Canal">Pago em Outro Canal</option>
+                                    <option value="Negado">Negado</option>
+                                    <option value="Sem Interesse">Sem Interesse</option>
+                                    <option value="Sem Contato">Sem Contato</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -978,7 +1031,17 @@
                 function openAddLeadModal() {
                     document.getElementById('addLeadModal').style.display = 'flex';
                     document.getElementById('new-lead-nome').value = '';
-                    document.getElementById('new-lead-cpf').value = '';
+                    document.getElementById('new-lead-cpf').addEventListener('input', function (e) {
+                        let value = e.target.value.replace(/\D/g, ""); // Remove tudo que não é número
+                        if (value.length > 11) value = value.slice(0, 11); // Limita a 11 dígitos
+
+                        // Aplica a máscara
+                        value = value.replace(/(\d{3})(\d)/, "$1.$2");
+                        value = value.replace(/(\d{3})(\d)/, "$1.$2");
+                        value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                        
+                        e.target.value = value;
+                    });
                     document.getElementById('new-lead-nome').focus();
                     lucide.createIcons();
                 }
@@ -1140,15 +1203,14 @@
             document.getElementById(pageId).classList.add('active');
             element.classList.add('active');
             document.getElementById('page-title').innerText = element.innerText;
-            if(pageId === 'kanban') renderAllCards(); // Atualiza layout dos cards ao abrir o Kanban
-            const originalShowPage = showPage;
-            showPage = function(pageId, element) {
-                originalShowPage(pageId, element);
-                if(pageId === 'treinamentos') {
-                    atualizarStatusTreinamentos();
-                    lucide.createIcons();
-                }
-            };
+
+            if(pageId === 'kanban') renderAllCards(); 
+            
+            // Chama a atualização apenas quando entrar na página de treinamentos
+            if(pageId === 'treinamentos') {
+                atualizarStatusTreinamentos();
+            }
+            lucide.createIcons();
         }
 
         // --- LÓGICA DO DASHBOARD ---
@@ -1210,6 +1272,44 @@
 
         // --- LÓGICA KANBAN ---
 
+
+        function perderNegocioModal() {
+            const currentLeadId = document.getElementById('modal-current-lead-id').value;
+            const card = document.getElementById(currentLeadId);
+            if (!card) return;
+
+            const targetCol = document.querySelector(`.kanban-col[data-stage="Perdido"] .kanban-cards-area`);
+            if (targetCol) {
+                targetCol.appendChild(card);
+                renderCard(card);
+                updateColCounts();
+                
+                // Atualiza o modal para refletir o novo estado
+                document.getElementById('modal-status').innerText = "Perdido";
+                document.getElementById('modal-motivo-perdido-select').parentElement.style.display = 'block';
+                
+                addHistoryItem("Lead movido para PERDIDO manualmente.");
+                showToast("Lead movido para colunas de perda.");
+                
+                // Desabilita botões após perder
+                document.getElementById('btn-avancar-modal').disabled = true;
+                document.getElementById('btn-perder-modal').disabled = true;
+            }
+        }
+
+        document.getElementById('modal-motivo-perdido-select').addEventListener('change', function() {
+            const motivo = this.value;
+            const currentLeadId = document.getElementById('modal-current-lead-id').value;
+            const card = document.getElementById(currentLeadId);
+            
+            if (card) {
+                card.setAttribute('data-motivo', motivo);
+                addHistoryItem(`Motivo da perda definido: ${motivo}`);
+                showToast("Motivo atualizado!");
+                // Opcional: renderizar novamente se quiser mostrar o motivo no card
+                renderCard(card); 
+            }
+        });
 
         // Função para marcar que o PDF foi aberto
         function marcarComoVisto(idTreinamento) {
@@ -1459,8 +1559,24 @@
 
         function updateColCounts() {
             document.querySelectorAll('.kanban-col').forEach(col => {
-                const visible = Array.from(col.querySelectorAll('.k-card')).filter(c => c.style.display !== 'none').length;
-                col.querySelector('.col-count').innerText = visible;
+                const cards = Array.from(col.querySelectorAll('.k-card')).filter(c => c.style.display !== 'none');
+                const count = cards.length;
+                
+                // Calcula a soma dos valores
+                const totalValor = cards.reduce((acc, card) => {
+                    const val = parseFloat(card.getAttribute('data-val')) || 0;
+                    return acc + val;
+                }, 0);
+
+                const formatado = totalValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                
+                // Atualiza o HTML da coluna (Qtd | Valor)
+                const badge = col.querySelector('.col-count');
+                badge.innerHTML = `${count} | ${formatado}`;
+                
+                // Opcional: ajustar o estilo da badge para caber o texto
+                badge.style.width = "auto";
+                badge.style.minWidth = "20px";
             });
         }
 
@@ -1485,6 +1601,17 @@
             // CORREÇÃO AQUI: Pegando o valor correto e aplicando nos botões
             const statusRecompra = el.getAttribute('data-recompra') || "Não";
             setRecompra(statusRecompra); 
+
+
+            const motivoSelectContainer = document.getElementById('modal-motivo-perdido-select').parentElement;
+
+            if (stage === 'Perdido') {
+                motivoSelectContainer.style.display = 'block';
+                // Se o card já tiver um motivo salvo, você pode setar aqui
+                document.getElementById('modal-motivo-perdido-select').value = el.getAttribute('data-motivo') || "";
+            } else {
+                motivoSelectContainer.style.display = 'none';
+            }
 
             // Limpa o histórico visual e adiciona a entrada de abertura
             document.getElementById('modal-historico').innerHTML = '';
@@ -1512,6 +1639,14 @@
             else if(stage === 'Prospectando') msg += `Estamos simulando as melhores condições para o seu crédito de ${prod}.`;
             else if(stage === 'Negociando') msg += `Tenho uma proposta de R$ ${parseFloat(val).toLocaleString('pt-BR')} para você. Podemos seguir?`;
             else msg += `Sua proposta #${el.getAttribute('data-prop')} está em análise!`;
+
+            // No final da openLeadModal
+            const isFinalizado = (stage === "Ganho" || stage === "Perdido");
+            document.getElementById('btn-avancar-modal').disabled = isFinalizado;
+            document.getElementById('btn-perder-modal').disabled = isFinalizado;
+
+            // Mostrar/Esconder motivo de perdido
+            document.getElementById('modal-motivo-perdido-select').parentElement.style.display = (stage === 'Perdido') ? 'block' : 'none';
             
             document.getElementById('modal-msg').value = msg;
             lucide.createIcons();
